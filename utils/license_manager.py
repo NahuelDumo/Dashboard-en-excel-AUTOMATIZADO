@@ -6,7 +6,7 @@ import streamlit as st
 
 class LicenseManager:
     def __init__(self):
-        self.license_url = "https://raw.githubusercontent.com/NahuelDumo/Dashboard-Automatizado-en-Python/refs/heads/main/Licencias.txt"
+        self.license_url = "https://raw.githubusercontent.com/NahuelDumo/Dashboard-en-excel-AUTOMATIZADO/refs/heads/main/Licencias.txt"
         self.license_file = "license_config.json"
         
     def save_license_locally(self, license_code):

@@ -79,7 +79,7 @@ El script permite:
 
 ### URL de Licencias en la Nube
 ```
-https://raw.githubusercontent.com/NahuelDumo/Dashboard-Automatizado-en-Python/refs/heads/main/Licencias.txt
+https://raw.githubusercontent.com/NahuelDumo/Dashboard-en-excel-AUTOMATIZADO/refs/heads/main/Licencias.txt
 ```
 
 ### Dependencias Agregadas
