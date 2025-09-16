@@ -1,0 +1,16 @@
+{
+  "Licencias": [
+    {
+      "Codigo": "XBDC-0696-5689-54CD",
+      "Activo": true,
+      "Creada": "2025-01-15 10:30:00",
+      "Descripcion": "Licencia de ejemplo - Cliente principal"
+    },
+    {
+      "Codigo": "TEST-1234-5678-90AB",
+      "Activo": false,
+      "Creada": "2025-01-15 11:00:00",
+      "Descripcion": "Licencia de prueba - Inactiva"
+    }
+  ]
+}
