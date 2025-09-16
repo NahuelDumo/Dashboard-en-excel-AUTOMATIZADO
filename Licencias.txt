@@ -2,7 +2,7 @@
   "Licencias": [
     {
       "Codigo": "XBDC-0696-5689-54CD",
-      "Activo": true,
+      "Activo": false,
       "Creada": "2025-01-15 10:30:00",
       "Descripcion": "Licencia de ejemplo - Cliente principal"
     },
