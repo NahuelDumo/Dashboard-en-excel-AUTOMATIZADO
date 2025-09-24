@@ -43,7 +43,7 @@ def process_data(df, date_from, date_to):
 
 
     # HL y cálculos por fila
-    df["HL"] = df["Kg_Lt"] / 100
+    df["HL"] = df["Kg"] / 100
     # Extraer el calibre numérico de los 'cc' y guardarlo en una nueva columna
     # Extraer el calibre numérico de los 'cc', mantener NaN si no se encuentra y luego convertir a Int64 (que soporta NaN)
     df['Calibre_CC'] = pd.to_numeric(df['Descripcion'].str.findall(r'(\d+)\s*cc').str[0], errors='coerce')
@@ -105,13 +105,13 @@ def build_global_summary(df, date_to, salidas_mes, salidas_actuales, cartera_man
                          (df_completo["Fecha"].dt.year == ultimo_anio)].copy()
 
     # 1. HL (UM pasa a ser HL) - Litros VENDIDOS = KG / 100 -> SOLO DEL ULTIMO MES (dentro del rango)
-    hl = df_mes["Kg_Lt"].sum() / 100 if "Kg_Lt" in df_mes.columns and not df_mes.empty else 0
+    hl = df_mes["Kg"].sum() / 100 if "Kg" in df_mes.columns and not df_mes.empty else 0
 
     # 2. UM PROYECTADO = HectoLitro / salida * Salida del mes -> BASADO EN HL DEL ULTIMO MES
     hl_proyectado = (hl / salidas_actuales) * salidas_mes if salidas_actuales else 0
 
     # 3. HECTOLITROREAL = HECTOLITROREAL -> ACUMULADO DEL RANGO COMPLETO FILTRADO
-    hectolitro_real = df_completo["Kg_Lt"].sum() / 100 if "Kg_Lt" in df_completo.columns else 0
+    hectolitro_real = df_completo["Kg"].sum() / 100 if "Kg" in df_completo.columns else 0
 
     # 4. % BONIFICACION = Sale la Bruto - Neto / Bruto -> DEL RANGO COMPLETO FILTRADO
     bruto = df_completo["NetoSD"].sum()
@@ -123,7 +123,7 @@ def build_global_summary(df, date_to, salidas_mes, salidas_actuales, cartera_man
     # 5. Cálculo de clientes con compra (CCE) para diferentes categorías
     def calcular_cce(df_filtrado):
         return (
-            df_filtrado.groupby("CodigoCliente")["Kg_Lt"]
+            df_filtrado.groupby("CodigoCliente")["Kg"]
             .sum()
             .loc[lambda x: x > 0]
             .count()
@@ -152,10 +152,10 @@ def build_global_summary(df, date_to, salidas_mes, salidas_actuales, cartera_man
             print(f"DEBUG -> Valores únicos en Rubro: {df_completo['Rubro'].dropna().unique()}")
 
     # Debug información de clientes con compra
-    clientes_con_kg = df_completo[df_completo["Kg_Lt"] > 0].groupby('CodigoCliente')['Kg_Lt'].sum().reset_index()
+    clientes_con_kg = df_completo[df_completo["Kg"] > 0].groupby('CodigoCliente')['Kg'].sum().reset_index()
     print("DEBUG Cobertura -> Clientes con compra y sus kg:")
     for _, row in clientes_con_kg.head(10).iterrows():  # Mostrar solo los primeros 10 para no saturar
-        print(f"Código: {row['CodigoCliente']}, Kg: {row['Kg_Lt']:.2f}")
+        print(f"Código: {row['CodigoCliente']}, Kg: {row['Kg']:.2f}")
     print(f"... y {len(clientes_con_kg) - 10} clientes más" if len(clientes_con_kg) > 10 else "")
 
     cobertura = (clientes_con_compra / cartera_manual) if cartera_manual else 0
@@ -175,7 +175,7 @@ def build_global_summary(df, date_to, salidas_mes, salidas_actuales, cartera_man
         
         # Filtrar solo productos de marca LEVITE con ventas positivas
         mask_levite = marcas_norm.str.contains(r"\bLEVITE\b", case=False, na=False)
-        df_levite = df_completo[mask_levite & (df_completo.get("Kg_Lt", 0) > 0)].copy()
+        df_levite = df_completo[mask_levite & (df_completo.get("Kg", 0) > 0)].copy()
         
         if not df_levite.empty:
             # Denominador: compradores de LEVITE (con venta > 0)
@@ -227,7 +227,7 @@ def build_global_summary(df, date_to, salidas_mes, salidas_actuales, cartera_man
         mask_imperial_golden = marcas_norm.str.contains("imperial", na=False) & desc_norm.str.contains("golden", na=False)
 
         # Filtrar solo registros con calibre 330
-        df_ccu = df_completo[mask_calibre_330 & (df_completo.get("Kg_Lt", 0) > 0)].copy()
+        df_ccu = df_completo[mask_calibre_330 & (df_completo.get("Kg", 0) > 0)].copy()
         
         print(f"DEBUG CCC Ñandú -> Total registros con calibre 330: {len(df_ccu)}")
 
@@ -246,8 +246,8 @@ def build_global_summary(df, date_to, salidas_mes, salidas_actuales, cartera_man
         )
         df_ccu = df_ccu.dropna(subset=["MarcaCCC"])  # seguridad
 
-        # Primero filtramos clientes con Kg_Lt acumulado > 0
-        clientes_con_kg_positivo = df_ccu.groupby("CodigoCliente")["Kg_Lt"].sum()
+        # Primero filtramos clientes con Kg acumulado > 0
+        clientes_con_kg_positivo = df_ccu.groupby("CodigoCliente")["Kg"].sum()
         clientes_con_kg_positivo = clientes_con_kg_positivo[clientes_con_kg_positivo > 0].index
         
         # Luego contamos marcas únicas solo para estos clientes
