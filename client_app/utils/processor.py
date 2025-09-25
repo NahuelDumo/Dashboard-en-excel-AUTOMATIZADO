@@ -1,5 +1,9 @@
 import pandas as pd
 from datetime import datetime
+import numpy as np
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from functools import partial
+import multiprocessing as mp
 
 def extract_calibre(descripcion):
     import re
@@ -7,6 +11,41 @@ def extract_calibre(descripcion):
     if match:
         return match.group(1)
     return "Sin Calibre"
+
+def extract_bultos(descripcion):
+    import re
+    match = re.search(r"(\d+)\s*[xX]", str(descripcion))
+    return int(match.group(1)) if match else 1
+
+def process_chunk_parallel(chunk, extract_func):
+    """Procesa un chunk de datos en paralelo"""
+    return chunk.apply(extract_func)
+
+def parallel_apply(series, func, n_jobs=None):
+    """Aplica una función a una serie usando múltiples hilos"""
+    if n_jobs is None:
+        n_jobs = min(mp.cpu_count(), 4)  # Limitar a 4 hilos máximo para evitar sobrecarga
+    
+    if len(series) < 1000:  # Para datasets pequeños, no vale la pena paralelizar
+        return series.apply(func)
+    
+    # Dividir la serie en chunks
+    chunk_size = max(len(series) // n_jobs, 100)
+    chunks = [series.iloc[i:i + chunk_size] for i in range(0, len(series), chunk_size)]
+    
+    # Procesar chunks en paralelo
+    with ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        results = list(executor.map(partial(process_chunk_parallel, extract_func=func), chunks))
+    
+    # Concatenar resultados
+    return pd.concat(results, ignore_index=True)
+
+def _norm_parallel(s):
+    """Función de normalización optimizada para paralelización"""
+    import unicodedata
+    s = str(s) if pd.notna(s) else ""
+    s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+    return s.lower().strip()
 
 def process_data(df, date_from, date_to):
     import re
